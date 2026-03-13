@@ -68,7 +68,7 @@ class QRCodeGenerator:
             logger.error(f"Failed to generate QR Code: {e}")
             return False
 
-    def generate_svg(self, data: str, output_path: str | Path) -> bool:
+    def generate_svg(self, data: str, output_path: str | Path, logo_path: str = None) -> bool:
         """Generates a vector SVG QR code (always black/transparent for editing)."""
         try:
             factory = qrcode.image.svg.SvgPathImage
@@ -79,9 +79,39 @@ class QRCodeGenerator:
             # recreate make_image with the specific SVG factory
             img = self.qr.make_image(image_factory=factory)
             
+            xml_str = img.to_string().decode('utf-8')
+            
+            if logo_path:
+                import base64
+                from PIL import Image
+                from io import BytesIO
+                
+                logo = Image.open(logo_path).convert("RGBA")
+                
+                # SVG viewBox uses modules + borders. img.width gives us the coordinate size.
+                size_units = img.width
+                
+                # Calculate size and position to match the 25% boundary used in PNGs
+                logo_size_units = size_units * 0.25
+                x_pos = (size_units - logo_size_units) / 2
+                y_pos = (size_units - logo_size_units) / 2
+                
+                # Thumbnail the logo before converting to base64 to keep SVG file size small
+                max_px = 300
+                logo.thumbnail((max_px, max_px), Image.Resampling.LANCZOS)
+                
+                buffer = BytesIO()
+                logo.save(buffer, format="PNG")
+                b64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                
+                # Inject the <image> tag with base64 data into the SVG XML just before closing tag
+                image_tag = f'<image x="{x_pos}" y="{y_pos}" width="{logo_size_units}" height="{logo_size_units}" href="data:image/png;base64,{b64_str}" />'
+                xml_str = xml_str.replace("</svg>", f"{image_tag}</svg>")
+            
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            img.save(str(output_file))
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(xml_str)
             
             logger.info(f"QR Code SVG saved to: {output_file.absolute()}")
             return True

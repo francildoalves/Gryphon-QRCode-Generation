@@ -222,7 +222,11 @@ class QRCodeApp(ctk.CTk):
             title="Salvar QR Code como Vetor"
         )
         if file_path:
-            success = self.generator.generate_svg(self.current_address, file_path)
+            success = self.generator.generate_svg(
+                data=self.current_address, 
+                output_path=file_path, 
+                logo_path=self.current_logo_path
+            )
             if success:
                 self.show_status("✅ SVG Salvo com sucesso! Editável no Canva.", color="green")
             else:
