@@ -95,13 +95,28 @@ class QRCodeGenerator:
                 
                 logo = Image.open(logo_path).convert("RGBA")
                 
-                # SVG viewBox uses modules + borders. img.width gives us the coordinate size.
-                size_units = img.width
+                # SVG viewBox uses modules + borders. img.width gives us the coordinate size WITHOUT borders.
+                total_units = img.width + (img.border * 2)
                 
                 # Calculate size and position to match the 25% boundary used in PNGs
-                logo_size_units = size_units * 0.25
-                x_pos = (size_units - logo_size_units) / 2
-                y_pos = (size_units - logo_size_units) / 2
+                logo_size_units = total_units * 0.25
+                x_pos = (total_units - logo_size_units) / 2
+                y_pos = x_pos
+                
+                # Create a physical hole in the SVG path for the logo.
+                # This ensures the black matrix doesn't bleed behind translucent logos 
+                # and gives a fallback blank space if Canva strips the <image> tag!
+                import re
+                cut_min = int(x_pos)
+                cut_max = int(x_pos + logo_size_units)
+                
+                def remove_center_boxes(m):
+                    x, y = int(m.group(1)), int(m.group(2))
+                    if cut_min <= x <= cut_max and cut_min <= y <= cut_max:
+                        return ""
+                    return m.group(0)
+                
+                xml_str = re.sub(r"M(\d+),(\d+)H\d+V\d+H\d+z", remove_center_boxes, xml_str)
                 
                 # Thumbnail the logo before converting to base64 to keep SVG file size small
                 max_px = 300
