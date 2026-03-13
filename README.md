@@ -4,8 +4,8 @@ Solução em Python para gerar QR Codes a partir de endereços (URLs ou textos),
 
 ## 🌟 Funcionalidades
 - **GUI Moderna**: Interface rica gerada com `CustomTkinter` em Dark Mode e responsiva.
-- **Vetor Nativo (SVG)**: Exporte QR Codes perfeitos sem perda de qualidade para edição no Canva/Illustrator com fundos puramente transparentes (`SvgPathImage`).
 - **Logomarcas (Branding)**: Capacidade de selecionar e aplicar uma imagem (suportando fundo transparente PNG) ao centro matemático de um QR Code (`High Error Correction Level`), simulando a mesma arquitetura de branding de players de checkout do mercado.
+- **Vetor SVG "Designer Friendly" (Negative Space)**: Diferente de ferramentas tradicionais, o projeto recorta matematicamente a matriz central do código SVG. Isso permite subir a arte num painel de design livre (como o Canva ou Adobe Illustrator), colorir o Vetor de forma pura, e depois sobrepor qualquer Logomarca rasterizada diretamente na lacuna limpa deixada pela matriz - contornando as restrições que os editores vetoriais impõem a PNGs embutidos. 
 - **Imagem Direta (PNG / Clipboard)**: Gere as imagens em memória, permitindo cópia direta (`Ctrl+V`) para a Área de Transferência do Windows através da API nativa da Microsoft.
 - **Interface CLI Integrada**: Caso rodado com opções, a mesma arquitetura atua via terminal puro para automação - o script deduz pela inicialização.
 - **Architecture de Código Limpa**: Separação clara entre Lógica de Geração (`src/`), Interface Gráfica (`gui.py`) e Ponto de Entrada de Script (`main.py`).
