@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+qrcodes/
+*.svg
+*.png
+.env
