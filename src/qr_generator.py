@@ -12,19 +12,26 @@ class QRCodeGenerator:
     def __init__(self, version: int = 1, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size: int = 10, border: int = 4):
         # We default to ERROR_CORRECT_H (High - 30%) because it allows logos to cover
         # the center of the QR without destroying its scannability.
-        self.qr = qrcode.QRCode(
-            version=version,
-            error_correction=error_correction,
-            box_size=box_size,
-            border=border,
+        self.version = version
+        self.error_correction = error_correction
+        self.box_size = box_size
+        self.border = border
+
+    def _get_qr_instance(self):
+        """Creates a fresh instance of the generator to avoid internal version caching bugs."""
+        return qrcode.QRCode(
+            version=self.version,
+            error_correction=self.error_correction,
+            box_size=self.box_size,
+            border=self.border,
         )
 
     def generate_image(self, data: str, fill_color: str = "black", back_color: str = "white", logo_path: str = None):
         """Generates and returns the raw PIL Image object, optionally with a center logo."""
-        self.qr.clear()
-        self.qr.add_data(data)
-        self.qr.make(fit=True)
-        img = self.qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGBA')
+        qr = self._get_qr_instance()
+        qr.add_data(data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGBA')
 
         if logo_path:
             try:
@@ -72,12 +79,12 @@ class QRCodeGenerator:
         """Generates a vector SVG QR code (always black/transparent for editing)."""
         try:
             factory = qrcode.image.svg.SvgPathImage
-            self.qr.clear()
-            self.qr.add_data(data)
-            self.qr.make(fit=True)
+            qr = self._get_qr_instance()
+            qr.add_data(data)
+            qr.make(fit=True)
             
             # recreate make_image with the specific SVG factory
-            img = self.qr.make_image(image_factory=factory)
+            img = qr.make_image(image_factory=factory)
             
             xml_str = img.to_string().decode('utf-8')
             
@@ -104,8 +111,12 @@ class QRCodeGenerator:
                 logo.save(buffer, format="PNG")
                 b64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
                 
-                # Inject the <image> tag with base64 data into the SVG XML just before closing tag
-                image_tag = f'<image x="{x_pos}" y="{y_pos}" width="{logo_size_units}" height="{logo_size_units}" href="data:image/png;base64,{b64_str}" />'
+                # Inject xlink namespace if it doesn't exist (Required by Canva/Illustrator)
+                if 'xmlns:xlink' not in xml_str:
+                    xml_str = xml_str.replace('<svg ', '<svg xmlns:xlink="http://www.w3.org/1999/xlink" ')
+                
+                # Inject the <image> tag using BOTH href (SVG2) and xlink:href (SVG1.1 fallbacks)
+                image_tag = f'<image x="{x_pos}" y="{y_pos}" width="{logo_size_units}" height="{logo_size_units}" xlink:href="data:image/png;base64,{b64_str}" href="data:image/png;base64,{b64_str}" />'
                 xml_str = xml_str.replace("</svg>", f"{image_tag}</svg>")
             
             output_file = Path(output_path)
