@@ -1,17 +1,18 @@
 # Gryphon QR Code Generator
 
-Solução em Python para gerar QR Codes a partir de endereços (URLs ou textos), com suporte nativo a Interface Gráfica (GUI) moderna e exportações em Vetor (SVG) integradas.
+Solução em Python para gerar QR Codes a partir de endereços (URLs ou textos), com suporte nativo a Interface Gráfica (GUI) moderna, adição de Logomarcas e exportações em Vetor (SVG) integradas.
 
 ## 🌟 Funcionalidades
 - **GUI Moderna**: Interface rica gerada com `CustomTkinter` em Dark Mode e responsiva.
 - **Vetor Nativo (SVG)**: Exporte QR Codes perfeitos sem perda de qualidade para edição no Canva/Illustrator com fundos puramente transparentes (`SvgPathImage`).
+- **Logomarcas (Branding)**: Capacidade de selecionar e aplicar uma imagem (suportando fundo transparente PNG) ao centro matemático de um QR Code (`High Error Correction Level`), simulando a mesma arquitetura de branding de players de checkout do mercado.
 - **Imagem Direta (PNG / Clipboard)**: Gere as imagens em memória, permitindo cópia direta (`Ctrl+V`) para a Área de Transferência do Windows através da API nativa da Microsoft.
 - **Interface CLI Integrada**: Caso rodado com opções, a mesma arquitetura atua via terminal puro para automação - o script deduz pela inicialização.
 - **Architecture de Código Limpa**: Separação clara entre Lógica de Geração (`src/`), Interface Gráfica (`gui.py`) e Ponto de Entrada de Script (`main.py`).
 
 ## 🏗️ Estrutura
 
-- `src/qr_generator.py`: Módulo core que contém a lógica de geração dos Pixels (PNG) e Vectors (SVG).
+- `src/qr_generator.py`: Módulo core que contém a lógica de geração dos Pixels (PNG) e Vectors (SVG) utilizando Pillow (PIL).
 - `src/clipboard.py`: Utilitário para lidar com o *buffer* de memória DIB do ecossistema Microsoft Windows.
 - `gui.py`: Classe modular separada responsável por orquestrar a visualização CTK, botões e callbacks dinâmicos.
 - `main.py`: Ponto de entrada Híbrido. Aciona a CLI caso existam argumentos textuais anexados na thread original, e se omissos aciona a janela interativa com `customtkinter`.
@@ -20,7 +21,7 @@ Solução em Python para gerar QR Codes a partir de endereços (URLs ou textos),
 ## 🚀 Como usar
 
 ### 1. Pré-requisitos
-Acesse o diretório do projeto e instale as dependências. Recomenda-se o uso de um ambiente virtual (venv).
+Acesse o diretório do projeto e instale as dependências. Recomenda-se o uso de um ambiente virtual (venv). O repositório já se encarrega de ignorar estas pastas temporárias.
 
 ```bash
 python -m venv venv
@@ -28,11 +29,12 @@ python -m venv venv
 ```
 
 ### 2. Uso da Interface Gráfica
-Basta executar o projeto sem propriedades extras. Uma interface limpa será aberta.
+Basta executar o projeto sem propriedades extras. Uma interface limpa carregará:
 
 ```bash
 .\venv\Scripts\python.exe main.py
 ```
+*(Na Interface você terá o botão para Selecionar sua Logo e gerar o código)*
 
 ### 3. Automação e Terminal CLI
 Se quiser enviar via terminal direto:

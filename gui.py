@@ -16,7 +16,7 @@ class QRCodeApp(ctk.CTk):
 
         # Window Config
         self.title("Gryphon QR Generator")
-        self.geometry("600x700")
+        self.geometry("600x750")
         self.resizable(False, False)
         
         # Generator Instance
@@ -61,6 +61,28 @@ class QRCodeApp(ctk.CTk):
         )
         self.url_entry.pack(fill="x", pady=(0, 20))
 
+        # Logo Selection Frame
+        self.logo_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.logo_frame.pack(fill="x", padx=40, pady=(0, 20))
+        
+        self.logo_btn = ctk.CTkButton(
+            self.logo_frame,
+            text="🖼️ Selecionar Logomarca (Opcional)",
+            command=self.select_logo,
+            fg_color="transparent",
+            border_width=1,
+            text_color=("gray10", "gray90")
+        )
+        self.logo_btn.pack(side="left")
+        
+        self.logo_label = ctk.CTkLabel(
+            self.logo_frame,
+            text="Nenhuma logo selecionada",
+            font=ctk.CTkFont(size=11),
+            text_color="gray"
+        )
+        self.logo_label.pack(side="left", padx=(10, 0))
+
         # Generate Button
         self.generate_btn = ctk.CTkButton(
             self, 
@@ -101,6 +123,19 @@ class QRCodeApp(ctk.CTk):
 
         self.current_address = ""
         self.current_pil_image = None
+        self.current_logo_path = None
+
+    def select_logo(self):
+        file_path = ctk.filedialog.askopenfilename(
+            title="Selecione sua Logomarca",
+            filetypes=[("Imagens", "*.png *.jpg *.jpeg *.ico")]
+        )
+        if file_path:
+            self.current_logo_path = file_path
+            short_name = Path(file_path).name
+            if len(short_name) > 20:
+                short_name = short_name[:17] + "..."
+            self.logo_label.configure(text=f"✅ {short_name}")
 
     def handle_generate(self):
         self.current_address = self.url_entry.get().strip()
@@ -113,11 +148,12 @@ class QRCodeApp(ctk.CTk):
         self.update() # Force UI update
 
         try:
-            # Generate raw image wrapper from qrcode
+            # Generate raw image wrapper from qrcode with optional logo
             raw_qr = self.generator.generate_image(
                 data=self.current_address, 
                 fill_color="black", 
-                back_color="white"
+                back_color="white",
+                logo_path=self.current_logo_path
             )
             
             # Extract the actual PIL Image object so it's compatible with CustomTkinter and our clipboard tools
